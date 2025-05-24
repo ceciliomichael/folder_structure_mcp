@@ -15,11 +15,10 @@
 **Core Purpose**: Read all necessary file contents in a single, efficient operation.
 
 1.  **Exclusive Tool**: Use **ONLY** `read_files` for reading file contents.
-2.  **Absolute Paths MANDATORY**: Always provide full, absolute paths for all files (e.g., `["C:/Project/file1.txt", "C:/Project/file2.js"]`). Relative paths are FORBIDDEN.
-3.  **Consolidated Reading – ONE CALL Strategy**:
-    *   **ALWAYS read ALL relevant files for the current task or analysis in a SINGLE `read_files` call.**
-    *   Identify all files needed upfront and batch them.
-    *   **FORBIDDEN**: Reading files individually or in small, sequential batches. This drastically increases tool calls and is inefficient.
-    *   **Trust File Content**: If `read_files` returns empty content for a file, accept it as truly empty. Do not re-read assuming missing data.
+2.  **Absolute Paths MANDATORY**: Always provide full, absolute paths for all files. Files can and should be from multiple directories in a single call (e.g., `["C:/Project1/file1.txt", "C:/Project2/file2.js", "C:/AnotherDir/file3.md"]`).
+3.  **ABSOLUTE ONE-CALL Requirement**:
+    *   **ALL files needed for a task, across ALL relevant directories, MUST be read in ONE SINGLE `read_files` operation. NO EXCEPTIONS.**
+    *   Sequential `read_files` calls (e.g., reading some files, then others based on initial results) are **STRICTLY FORBIDDEN** and violate the core efficiency principle of this tool.
+    *   **PLAN AHEAD**: Identify every file required for the complete task. Gather ALL these file paths first. Then, invoke `read_files` exactly ONCE with the complete list.
 
-**Adherence is critical for minimizing tool calls and ensuring efficient operation.**
+**ANY deviation from the ONE-CALL Requirement (e.g., reading files individually, or in multiple small batches) is a SEVERE violation and completely defeats the purpose of this tool.**
