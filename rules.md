@@ -22,4 +22,9 @@
     *   *Example (Windows)*: `C:/Users/YourUser/Projects/MyProject/file.txt` or `C:\Users\YourUser\Projects\MyProject\file.txt`
     *   **STRICTLY PROHIBITED**: Relative paths (`.` , `./`, `../`) or malformed paths (`/c:/...`). These cause unpredictable behavior and errors.
 
+3.  **Batch Reading Requirement**: **ALWAYS READ MULTIPLE FILES TOGETHER** in a single `read_files` call. Reading files one by one is **STRICTLY PROHIBITED** and defeats the entire purpose of this tool.
+    *   **CORRECT**: `read_files(["C:/path/to/file1.txt", "C:/path/to/file2.txt", "C:/path/to/file3.txt"])`
+    *   **STRICTLY PROHIBITED**: Making separate calls to read each file individually - this creates unnecessary overhead and latency
+    *   This rule applies even when only a single file is needed initially - you should anticipate and batch read related files that might be needed later
+
 **Adherence to these rules is critical for stable and accurate operation.** 
