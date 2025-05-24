@@ -157,6 +157,46 @@ server.tool(
   }
 );
 
+// Tool to read multiple files
+server.tool(
+  "read_files",
+  {
+    files: z.array(z.string()).describe("An array of absolute file paths to read."),
+  },
+  async ({ files }: { files: string[] }) => {
+    const results = [];
+    for (const filePath of files) {
+      try {
+        // Resolve the file path
+        const resolvedFilePath = resolvePath(filePath); // Using the existing resolvePath function
+        console.error(`[read_files] Reading file: ${resolvedFilePath} (Input: ${filePath}, CWD: ${process.cwd()})`);
+        const content = await fs.readFile(resolvedFilePath, "utf-8");
+        results.push({
+          filePath: resolvedFilePath,
+          content: content,
+          error: null,
+        });
+      } catch (error: unknown) {
+        console.error(`[read_files] Error reading file ${filePath}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        results.push({
+          filePath: filePath, // Use original path in case of resolution error
+          content: null,
+          error: `Error reading file '${filePath}': ${errorMessage}`,
+        });
+      }
+    }
+    return {
+      content: results.map(r => ({
+        type: "text",
+        text: r.error 
+              ? `File: ${r.filePath}\nError: ${r.error}` 
+              : `File: ${r.filePath}\nContent:\n${r.content}`
+      }))
+    };
+  }
+);
+
 // Log the current working directory at startup
 console.error(`[MCP Server] FileSystemStructureTool starting in directory: ${process.cwd()}`);
 console.error(`[MCP Server] IMPORTANT: Use absolute paths (e.g., C:/Users/path/to/project) for reliable results`);
