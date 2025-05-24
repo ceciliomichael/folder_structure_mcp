@@ -1,30 +1,25 @@
 # `list_structure` MCP Tool Usage Rules
 
-**Core Purpose**: Efficiently explore directory structures and their contents.
+**Core Purpose**: Obtain a complete directory overview efficiently.
 
-1.  **Exclusive Tool**: `list_structure` is the **ONLY** permitted tool for directory exploration. Built-in tools like `list_dir` are strictly prohibited.
-    *   *Benefit*: Optimizes interactions, leverages custom features (e.g., default exclusions, tree-like output).
+1.  **Exclusive Tool**: Use **ONLY** `list_structure` for directory exploration.
+2.  **Absolute Paths MANDATORY**: Always provide full, absolute paths (e.g., `C:/Project/folder`). Relative paths (`./`, `../`) are FORBIDDEN.
+3.  **One Call for Full View**:
+    *   `list_structure` provides the **ENTIRE visible structure** of the specified path in a single call. Assume the output is complete; there are no "hidden" files or folders beyond what is listed.
+    *   **FORBIDDEN**: Re-running `list_structure` on subfolders already detailed in a previous output for that same root path. This is redundant and inefficient.
 
-2.  **Path Requirement**: **ALWAYS use ABSOLUTE PATHS** when invoking `list_structure`.
-    *   *Example (Windows)*: `C:/Users/YourUser/Projects/MyProject` or `C:\Users\YourUser\Projects\MyProject`
-    *   **STRICTLY PROHIBITED**: Relative paths (`.` , `./`, `../`) or malformed paths (`/c:/...`). These cause unpredictable behavior and errors.
-
-**Adherence to these rules is critical for stable and accurate operation.**
+**Adherence is critical for accurate and efficient operation.**
 
 # `read_files` MCP Tool Usage Rules
 
-**Core Purpose**: Efficiently read multiple files at once.
+**Core Purpose**: Read all necessary file contents in a single, efficient operation.
 
-1.  **Exclusive Tool**: `read_files` is the **ONLY** permitted tool for reading file contents. Built-in tools like `read_file` are strictly prohibited.
-    *   *Benefit*: Optimizes interactions by reading multiple files in a single call, reducing the number of tool calls needed.
+1.  **Exclusive Tool**: Use **ONLY** `read_files` for reading file contents.
+2.  **Absolute Paths MANDATORY**: Always provide full, absolute paths for all files (e.g., `["C:/Project/file1.txt", "C:/Project/file2.js"]`). Relative paths are FORBIDDEN.
+3.  **Consolidated Reading – ONE CALL Strategy**:
+    *   **ALWAYS read ALL relevant files for the current task or analysis in a SINGLE `read_files` call.**
+    *   Identify all files needed upfront and batch them.
+    *   **FORBIDDEN**: Reading files individually or in small, sequential batches. This drastically increases tool calls and is inefficient.
+    *   **Trust File Content**: If `read_files` returns empty content for a file, accept it as truly empty. Do not re-read assuming missing data.
 
-2.  **Path Requirement**: **ALWAYS use ABSOLUTE PATHS** when invoking `read_files`.
-    *   *Example (Windows)*: `C:/Users/YourUser/Projects/MyProject/file.txt` or `C:\Users\YourUser\Projects\MyProject\file.txt`
-    *   **STRICTLY PROHIBITED**: Relative paths (`.` , `./`, `../`) or malformed paths (`/c:/...`). These cause unpredictable behavior and errors.
-
-3.  **Batch Reading Requirement**: **ALWAYS READ MULTIPLE FILES TOGETHER** in a single `read_files` call. Reading files one by one is **STRICTLY PROHIBITED** and defeats the entire purpose of this tool.
-    *   **CORRECT**: `read_files(["C:/path/to/file1.txt", "C:/path/to/file2.txt", "C:/path/to/file3.txt"])`
-    *   **STRICTLY PROHIBITED**: Making separate calls to read each file individually - this creates unnecessary overhead and latency
-    *   This rule applies even when only a single file is needed initially - you should anticipate and batch read related files that might be needed later
-
-**Adherence to these rules is critical for stable and accurate operation.** 
+**Adherence is critical for minimizing tool calls and ensuring efficient operation.**
