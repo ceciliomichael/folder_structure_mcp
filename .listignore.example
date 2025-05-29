@@ -1,0 +1,47 @@
+# .listignore file - Patterns to exclude from list_structure output
+# Similar to .gitignore format
+# Lines starting with # are comments
+
+# Common directories to exclude
+node_modules
+.git
+.svn
+dist
+build
+coverage
+bin
+obj
+.vs
+.vscode
+__pycache__
+
+# Common file patterns to exclude
+*.pyc
+*.pyo
+*.class
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.log
+*.tmp
+*.temp
+*.swp
+*~
+
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Add your custom excludes below 
+
+venv
+.cursor
+.cursorrules
+
+.react
+.vite
+.next
