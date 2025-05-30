@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+      "filesystemTools": {
+        "command": "node",
+        "args": [
+          "[INPUT_PATH]/index.js"
+        ],
+        "env": {}
+      }
+    }
+}
