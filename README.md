@@ -21,6 +21,10 @@ Both tools require absolute paths and follow strict usage guidelines in `rules.m
 - **Simplified Workflows**: Streamline AI interactions with the file system
 - **Consistent Results**: Standardized approach to path handling and error management
 
+## Recommended Agents
+
+Based on testing, this project works optimally with advanced AI agents such as Gemini 2.5 Pro and Claude 3.7. These agents are adept at leveraging the efficient, single-call nature of the provided tools.
+
 ## License
 
 MIT 

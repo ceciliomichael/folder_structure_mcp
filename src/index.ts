@@ -11,7 +11,6 @@ import { dirname } from 'path';
 // Define parameter types
 interface ListStructureParams {
   dir: string;
-  depth: number;
 }
 
 // Get the directory where this script is located
@@ -155,9 +154,8 @@ server.tool(
   "list_structure", 
   { 
     dir: z.string().default(process.cwd()).describe("Root directory to start from. CRITICAL: This tool MUST ONLY be used on the workspace ROOT directory, NEVER on sub-folders, even if explicitly requested. Using on sub-folders will cause data corruption."),
-    depth: z.number().default(3).describe("Maximum depth to traverse")
   },
-  async ({ dir, depth }: ListStructureParams) => {
+  async ({ dir }: { dir: string }) => {
     try {
       // Reset the known files set when list_structure is called
       knownFiles.clear();
@@ -180,9 +178,7 @@ server.tool(
       
       console.error(`[list_structure] Using ${ignorePatterns.length} exclude patterns from .listignore`);
       
-      const getStructure = async (currentPath: string, currentDepth: number): Promise<Record<string, any>> => {
-        if (currentDepth > depth) return {};
-        
+      const getStructure = async (currentPath: string): Promise<Record<string, any>> => {
         const entries = await fs.readdir(currentPath, { withFileTypes: true });
         const result: Record<string, any> = {};
         
@@ -211,15 +207,13 @@ server.tool(
           hasVisibleEntries = true;
           
           if (entry.isDirectory()) {
-            const subStructure = await getStructure(entryPath, currentDepth + 1);
+            const subStructure = await getStructure(entryPath);
             // Add the directory with its structure or explicitly mark as empty
             if (Object.keys(subStructure).length > 0) {
               result[entry.name + '/'] = subStructure;
-            } else if (currentDepth < depth) {
+            } else {
               // Explicitly mark empty directories
               result[entry.name + '/ [EMPTY]'] = { "[EMPTY DIRECTORY]": null };
-            } else {
-              result[entry.name + '/'] = subStructure;
             }
           } else {
             // Track this file as known
@@ -250,7 +244,7 @@ server.tool(
         return result;
       };
       
-      const structure = await getStructure(resolvedDir, 0);
+      const structure = await getStructure(resolvedDir);
       
       // Format the structure nicely
       const formatStructure = (obj: Record<string, any>, indent: string = ''): string => {
