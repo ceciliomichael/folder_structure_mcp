@@ -152,11 +152,42 @@ server.tool(
       
       console.error(`[list_structure] Found and tracked ${knownFiles.size} files in the directory structure`);
       
-      return {
-        content: [{ 
+      // Check if metadata.md exists in the root directory
+      let metadataContent = null;
+      const metadataFilePath = path.join(resolvedDir, "metadata.md");
+      try {
+        await fs.access(metadataFilePath);
+        console.error(`[list_structure] Found metadata.md file, reading its contents`);
+        
+        // Add to known files if it's not already there
+        knownFiles.add(metadataFilePath);
+        
+        // Read the metadata file
+        metadataContent = await fs.readFile(metadataFilePath, "utf-8");
+        console.error(`[list_structure] Successfully read metadata.md (${metadataContent.length} bytes)`);
+      } catch (error) {
+        console.error(`[list_structure] No metadata.md file found in the root directory`);
+      }
+      
+      // Prepare the response content
+      const responseContent: Array<{ type: "text"; text: string }> = [];
+      
+      // Add the directory structure
+      responseContent.push({ 
+        type: "text", 
+        text: `Directory structure for ${resolvedDir}:\n\n${formattedStructure}` 
+      });
+      
+      // Add metadata.md content if found
+      if (metadataContent !== null) {
+        responseContent.push({ 
           type: "text", 
-          text: `Directory structure for ${resolvedDir}:\n\n${formattedStructure}` 
-        }]
+          text: `----------------------------\nMetadata from metadata.md\n----------------------------\n${metadataContent}` 
+        });
+      }
+      
+      return {
+        content: responseContent
       };
     } catch (error: unknown) {
       console.error("[list_structure] Error getting structure:", error);
@@ -277,6 +308,7 @@ console.error(`[MCP Server] ⚠️ CRITICAL REQUIREMENT: read_files must ALWAYS 
 console.error(`[MCP Server] ⚠️ VIOLATION WARNING: Ignoring these rules will result in context corruption and potential task failure`);
 console.error(`[MCP Server] INFO: Using .listignore file from the tool's directory to determine exclusions`);
 console.error(`[MCP Server] INFO: Only read files that appear in list_structure output - if a file isn't shown there, it doesn't exist`);
+console.error(`[MCP Server] INFO: list_structure will automatically check for and read metadata.md if it exists in the root directory`);
 
 // Start the server using stdio transport
 const transport = new StdioServerTransport();
