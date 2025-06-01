@@ -4,134 +4,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
-// Get the directory where the script is located
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-// Define parameter types
-interface ListStructureParams {
-  dir: string;
-}
-
-// Get the directory where this script is located
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Default excludes to use if no .listignore file is found
-const defaultExcludes = [
-  "node_modules", 
-  ".git", 
-  ".svn", 
-  "dist", 
-  "build", 
-  "coverage", 
-  "bin", 
-  "obj", 
-  ".vs", 
-  ".vscode", 
-  "__pycache__", 
-  "*.pyc", 
-  "*.pyo"
-];
-
-// Function to read and parse .listignore file from the script's directory
-async function readListIgnore(): Promise<string[]> {
-  try {
-    // Look for .listignore in the same directory as this script
-    const scriptDir = path.resolve(__dirname, '..');
-    const ignoreFilePath = path.join(scriptDir, '.listignore');
-    console.error(`[list_structure] Looking for .listignore at: ${ignoreFilePath}`);
-    
-    const content = await fs.readFile(ignoreFilePath, 'utf-8');
-    
-    // Parse the .listignore file content
-    const patterns = content
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#')); // Remove empty lines and comments
-    
-    console.error(`[list_structure] Found .listignore file with ${patterns.length} patterns`);
-    return patterns;
-  } catch (error) {
-    // If file doesn't exist or can't be read, use default excludes
-    console.error(`[list_structure] No .listignore file found or error reading it, using default excludes`);
-    return defaultExcludes;
-  }
-}
-
-// Function to check if a path matches a glob pattern
-function matchesPattern(name: string, pattern: string): boolean {
-  // Simple glob matching for common patterns
-  if (pattern.startsWith('*') && pattern.endsWith('*')) {
-    // *text* pattern (contains)
-    const substring = pattern.slice(1, -1);
-    return name.includes(substring);
-  } else if (pattern.startsWith('*')) {
-    // *.ext pattern (extension)
-    const suffix = pattern.slice(1);
-    return name.endsWith(suffix);
-  } else if (pattern.endsWith('*')) {
-    // prefix* pattern (starts with)
-    const prefix = pattern.slice(0, -1);
-    return name.startsWith(prefix);
-  } else if (pattern.includes('*')) {
-    // Complex pattern with * in the middle
-    const parts = pattern.split('*');
-    return parts.every((part, index) => {
-      if (index === 0) return name.startsWith(part);
-      if (index === parts.length - 1) return name.endsWith(part);
-      return name.includes(part);
-    });
-  } else {
-    // Exact match
-    return name === pattern;
-  }
-}
-
-// Utility function to resolve paths relative to the current working directory
-function resolvePath(inputPath: string): string {
-  try {
-    // First, try to decode any URL-encoded characters in the path
-    let correctedPath = decodeURIComponent(inputPath);
-    console.error(`[Path Decoding] Input path: "${inputPath}" → Decoded: "${correctedPath}"`);
-    
-    // Correct paths like /c/ to C:/ (missing colon)
-    if (correctedPath.match(/^\/[a-zA-Z]\//)) {
-      const driveLetter = correctedPath.charAt(1).toUpperCase();
-      correctedPath = `${driveLetter}:${correctedPath.substring(2)}`;
-      console.error(`[Path Correction] Fixed missing colon: "${inputPath}" → "${correctedPath}"`);
-    }
-    
-    // Correct common Windows path issue /c:/ -> C:/
-    if (correctedPath.match(/^\/[a-zA-Z]:\//)) {
-      correctedPath = correctedPath.substring(1);
-      console.error(`[Path Correction] Fixed malformed path: "${inputPath}" → "${correctedPath}"`);
-    }
-    
-    // Handle paths with %3A that weren't properly decoded (fallback)
-    if (correctedPath.includes('%3A')) {
-      correctedPath = correctedPath.replace(/%3A/g, ':');
-      console.error(`[Path Correction] Fixed encoded colon: "${inputPath}" → "${correctedPath}"`);
-    }
-    
-    // If path is absolute, return as is
-    if (path.isAbsolute(correctedPath)) {
-      return correctedPath;
-    }
-    
-    // Otherwise, resolve relative to the current working directory
-    const resolvedPath = path.resolve(process.cwd(), correctedPath);
-    console.error(`[Path Resolution] Relative path "${correctedPath}" resolved to "${resolvedPath}"`);
-    return resolvedPath;
-  } catch (error) {
-    console.error(`[Path Resolution Error] Failed to process path "${inputPath}":`, error);
-    // If decoding fails, try to use the original path as a fallback
-    if (path.isAbsolute(inputPath)) {
-      return inputPath;
-    }
-    return path.resolve(process.cwd(), inputPath);
-  }
-}
+// Import refactored modules
+import { readListIgnore } from "./utils/ignore-utils.js";
+import { resolvePath } from "./utils/path-utils.js";
+import { matchesPattern } from "./utils/ignore-utils.js";
 
 // Create an MCP server
 const server = new McpServer({
@@ -332,7 +209,7 @@ server.tool(
         console.error(`[read_files] Raw input path: "${filePath}"`);
         
         // Resolve the file path
-        const resolvedFilePath = resolvePath(filePath); // Using the existing resolvePath function
+        const resolvedFilePath = resolvePath(filePath);
         console.error(`[read_files] Reading file: ${resolvedFilePath} (Input: ${filePath}, CWD: ${process.cwd()})`);
         
         // Warn if this file wasn't seen in list_structure
