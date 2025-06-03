@@ -169,6 +169,23 @@ server.tool(
         console.error(`[list_structure] No metadata.md file found in the root directory`);
       }
       
+      // Check if design.md exists in the root directory
+      let designContent = null;
+      const designFilePath = path.join(resolvedDir, "design.md");
+      try {
+        await fs.access(designFilePath);
+        console.error(`[list_structure] Found design.md file, reading its contents`);
+        
+        // Add to known files if it's not already there
+        knownFiles.add(designFilePath);
+        
+        // Read the design file
+        designContent = await fs.readFile(designFilePath, "utf-8");
+        console.error(`[list_structure] Successfully read design.md (${designContent.length} bytes)`);
+      } catch (error) {
+        console.error(`[list_structure] No design.md file found in the root directory`);
+      }
+      
       // Prepare the response content
       const responseContent: Array<{ type: "text"; text: string }> = [];
       
@@ -183,6 +200,14 @@ server.tool(
         responseContent.push({ 
           type: "text", 
           text: `----------------------------\nMetadata from metadata.md\n----------------------------\n${metadataContent}` 
+        });
+      }
+      
+      // Add design.md content if found
+      if (designContent !== null) {
+        responseContent.push({ 
+          type: "text", 
+          text: `----------------------------\nDesign Guidelines from design.md\n----------------------------\n${designContent}` 
         });
       }
       
@@ -308,7 +333,7 @@ console.error(`[MCP Server] ⚠️ CRITICAL REQUIREMENT: read_files must ALWAYS 
 console.error(`[MCP Server] ⚠️ VIOLATION WARNING: Ignoring these rules will result in context corruption and potential task failure`);
 console.error(`[MCP Server] INFO: Using .listignore file from the tool's directory to determine exclusions`);
 console.error(`[MCP Server] INFO: Only read files that appear in list_structure output - if a file isn't shown there, it doesn't exist`);
-console.error(`[MCP Server] INFO: list_structure will automatically check for and read metadata.md if it exists in the root directory`);
+console.error(`[MCP Server] INFO: list_structure will automatically check for and read metadata.md and design.md if they exist in the root directory`);
 
 // Start the server using stdio transport
 const transport = new StdioServerTransport();
