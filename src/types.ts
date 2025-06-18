@@ -13,6 +13,13 @@ export interface ReadFilesParams {
 }
 
 /**
+ * Parameter types for the type_check tool
+ */
+export interface TypeCheckParams {
+  dir: string;
+}
+
+/**
  * Result of a file read operation
  */
 export interface FileReadResult {

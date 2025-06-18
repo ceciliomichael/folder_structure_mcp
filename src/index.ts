@@ -9,6 +9,7 @@ import path from "path";
 import { readListIgnore } from "./utils/ignore-utils.js";
 import { resolvePath } from "./utils/path-utils.js";
 import { matchesPattern } from "./utils/ignore-utils.js";
+import { typeCheck } from "./tools/type-check.js";
 
 // Create an MCP server
 const server = new McpServer({
@@ -308,6 +309,17 @@ server.tool(
         }
       })
     };
+  }
+);
+
+// Tool to check TypeScript types
+server.tool(
+  "type_check",
+  {
+    dir: z.string().default(process.cwd()).describe("Root directory to execute TypeScript compiler in. This should be the root of a TypeScript project."),
+  },
+  async ({ dir }) => {
+    return await typeCheck({ dir });
   }
 );
 
